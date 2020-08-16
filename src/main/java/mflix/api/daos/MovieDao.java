@@ -268,10 +268,10 @@ public class MovieDao extends AbstractMFlixDao {
     public List<Document> getMoviesCastFaceted(int limit, int skip, String... cast) {
         List<Document> movies = new ArrayList<>();
         String sortKey = "tomatoes.viewer.numReviews";
-        Bson skipStage = Aggregates.skip(skip);
-        Bson matchStage = Aggregates.match(Filters.in("cast", cast));
-        Bson sortStage = Aggregates.sort(Sorts.descending(sortKey));
-        Bson limitStage = Aggregates.limit(limit);
+        Bson skipStage = skip(skip);
+        Bson matchStage = match(Filters.in("cast", cast));
+        Bson sortStage = sort(Sorts.descending(sortKey));
+        Bson limitStage = limit(limit);
         Bson facetStage = buildFacetStage();
         // Using a LinkedList to ensure insertion order
         List<Bson> pipeline = new LinkedList<>();
@@ -281,6 +281,10 @@ public class MovieDao extends AbstractMFlixDao {
         // Your job is to order the stages correctly in the pipeline.
         // Starting with the `matchStage` add the remaining stages.
         pipeline.add(matchStage);
+        pipeline.add(sortStage);
+        pipeline.add(skipStage);
+        pipeline.add(limitStage);
+        pipeline.add(facetStage);
 
         moviesCollection.aggregate(pipeline).iterator().forEachRemaining(movies::add);
         return movies;
